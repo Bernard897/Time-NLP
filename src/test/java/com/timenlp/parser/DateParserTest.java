@@ -1,14 +1,40 @@
 package com.timenlp.parser;
 
-import org.junit.Test;
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.Test;
 
-public class DateParserTest {
+import java.time.LocalDate;
+import java.util.Optional;
+
+import static org.junit.jupiter.api.Assertions.*;
+
+class DateParserTest {
+
+    private final DateParser dateParser = new DateParser();
 
     @Test
-    public void testParse() {
-        DateParser dateParser = new DateParser();
-        // TODO: Implement test cases
-        assertNull(dateParser.parse("test"));
+    void parseDate_yyyy_MM_dd() {
+        Optional<LocalDate> date = dateParser.parseDate("2023-10-26");
+        assertTrue(date.isPresent());
+        assertEquals(LocalDate.of(2023, 10, 26), date.get());
     }
+
+    @Test
+    void parseDate_MM_dd_yyyy() {
+        Optional<LocalDate> date = dateParser.parseDate("10/26/2023");
+        assertTrue(date.isPresent());
+        assertEquals(LocalDate.of(2023, 10, 26), date.get());
+    }
+
+    @Test
+    void parseDate_invalidFormat() {
+        Optional<LocalDate> date = dateParser.parseDate("2023/10/26");
+        assertFalse(date.isPresent());
+    }
+
+    @Test
+    void parseDate_emptyString() {
+        Optional<LocalDate> date = dateParser.parseDate("");
+        assertFalse(date.isPresent());
+    }
+
 }
