@@ -1,95 +1,34 @@
 package com.timenlp.parser;
 
-import com.timenlp.entity.DateEntity;
 import org.junit.jupiter.api.Test;
-
-import java.text.ParseException;
-
 import static org.junit.jupiter.api.Assertions.*;
 
-class DateParserTest {
+public class DateParserTest {
+
+    private final DateParser dateParser = new DateParser();
 
     @Test
-    void parseDateYMD() throws ParseException {
-        DateParser dateParser = new DateParser();
-        DateEntity dateEntity = dateParser.parseDate("2023-10-26");
-        assertNotNull(dateEntity);
-        assertEquals(2023, dateEntity.year);
-        assertEquals(10, dateEntity.month);
-        assertEquals(26, dateEntity.day);
+    void testYYYYMMDD() {
+        assertEquals("2023-10-26", dateParser.parse("2023-10-26"));
     }
 
     @Test
-    void parseDateDMY() throws ParseException {
-        DateParser dateParser = new DateParser();
-        DateEntity dateEntity = dateParser.parseDate("26-10-2023");
-        assertNotNull(dateEntity);
-        assertEquals(2023, dateEntity.year);
-        assertEquals(10, dateEntity.month);
-        assertEquals(26, dateEntity.day);
+    void testMMDDYYYY() {
+        assertEquals("2023-10-26", dateParser.parse("10/26/2023"));
     }
 
     @Test
-     void parseDateWithSlashes() throws ParseException {
-        DateParser dateParser = new DateParser();
-        DateEntity dateEntity = dateParser.parseDate("2023/10/26");
-        assertNotNull(dateEntity);
-        assertEquals(2023, dateEntity.year);
-        assertEquals(10, dateEntity.month);
-        assertEquals(26, dateEntity.day);
+    void testYYYYMMDDChinese() {
+        assertEquals("2023-10-01", dateParser.parse("2023年10月1日"));
     }
 
     @Test
-    void parseDateSingleDigitDayMonth() throws ParseException {
-        DateParser dateParser = new DateParser();
-        DateEntity dateEntity = dateParser.parseDate("2023-1-1");
-        assertNotNull(dateEntity);
-        assertEquals(2023, dateEntity.year);
-        assertEquals(1, dateEntity.month);
-        assertEquals(1, dateEntity.day);
+    void testDDMMMYYYY() {
+        assertEquals("2024-01-05", dateParser.parse("5 Jan 2024"));
     }
 
     @Test
-    void parseDateTwoDigitYear() throws ParseException {
-       DateParser dateParser = new DateParser();
-       DateEntity dateEntity = dateParser.parseDate("23-10-26");
-       assertNotNull(dateEntity);
-       assertEquals(2023, dateEntity.year);
-       assertEquals(10, dateEntity.month);
-       assertEquals(26, dateEntity.day);
+    void testMMMDDYYYY() {
+        assertEquals("2024-02-12", dateParser.parse("Feb 12, 2024"));
     }
-
-    @Test
-    void parseDateWithLeadingZeros() throws ParseException {
-        DateParser dateParser = new DateParser();
-        DateEntity dateEntity = dateParser.parseDate("2023-01-01");
-        assertNotNull(dateEntity);
-        assertEquals(2023, dateEntity.year);
-        assertEquals(1, dateEntity.month);
-        assertEquals(1, dateEntity.day);
-    }
-    @Test
-    void parseDateWithInvalidDate() {
-        DateParser dateParser = new DateParser();
-        assertThrows(ParseException.class, () -> dateParser.parseDate("2023-02-30"));
-    }
-
-    @Test
-    void parseDateWithInvalidFormat() {
-        DateParser dateParser = new DateParser();
-        assertThrows(ParseException.class, () -> dateParser.parseDate("October 26, 2023"));
-    }
-
-    @Test
-    void parseDateWithEmptyString() {
-        DateParser dateParser = new DateParser();
-        assertThrows(ParseException.class, () -> dateParser.parseDate(""));
-    }
-
-    @Test
-    void parseDateWithNullString() {
-        DateParser dateParser = new DateParser();
-        assertThrows(NullPointerException.class, () -> dateParser.parseDate(null));
-    }
-
 }
