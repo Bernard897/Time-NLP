@@ -1,41 +1,109 @@
 package com.timenlp.parser;
 
+import com.timenlp.entity.TimeEntity;
 import org.junit.jupiter.api.Test;
-
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 class RelativeTimeParserTest {
 
     @Test
-    void parseToday() {
+    void parseNextWeek() {
         RelativeTimeParser parser = new RelativeTimeParser();
-        String expected = LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE);
-        assertEquals(expected, parser.parse("today"));
-        assertEquals(expected, parser.parse("Today"));
+        TimeEntity baseTime = new TimeEntity(2024, 1, 29, 12, 0, 0);
+        TimeEntity result = parser.parse("下周", baseTime);
+        assertNotNull(result);
+        assertEquals(2024, result.getYear());
+        assertEquals(2, result.getMonth());
+        assertEquals(5, result.getDay());
     }
 
     @Test
-    void parseTomorrow() {
+    void parseLastWeek() {
         RelativeTimeParser parser = new RelativeTimeParser();
-        String expected = LocalDate.now().plusDays(1).format(DateTimeFormatter.ISO_LOCAL_DATE);
-        assertEquals(expected, parser.parse("tomorrow"));
-        assertEquals(expected, parser.parse("Tomorrow"));
+        TimeEntity baseTime = new TimeEntity(2024, 1, 29, 12, 0, 0);
+        TimeEntity result = parser.parse("上周", baseTime);
+        assertNotNull(result);
+        assertEquals(2024, result.getYear());
+        assertEquals(1, result.getMonth());
+        assertEquals(22, result.getDay());
+    }
+
+     @Test
+    void parseThisWeek() {
+        RelativeTimeParser parser = new RelativeTimeParser();
+        TimeEntity baseTime = new TimeEntity(2024, 1, 29, 12, 0, 0);
+        TimeEntity result = parser.parse("这周", baseTime);
+        assertNotNull(result);
+        assertEquals(2024, result.getYear());
+        assertEquals(1, result.getMonth());
+        assertEquals(28, result.getDay());
     }
 
     @Test
-    void parseYesterday() {
+    void parseNextMonth() {
         RelativeTimeParser parser = new RelativeTimeParser();
-        String expected = LocalDate.now().minusDays(1).format(DateTimeFormatter.ISO_LOCAL_DATE);
-        assertEquals(expected, parser.parse("yesterday"));
-        assertEquals(expected, parser.parse("Yesterday"));
+        TimeEntity baseTime = new TimeEntity(2024, 1, 29, 12, 0, 0);
+        TimeEntity result = parser.parse("下个月", baseTime);
+        assertNotNull(result);
+        assertEquals(2024, result.getYear());
+        assertEquals(2, result.getMonth());
+        assertEquals(29, result.getDay());
     }
 
     @Test
-    void parseInvalidInput() {
+    void parseLastMonth() {
         RelativeTimeParser parser = new RelativeTimeParser();
-        assertNull(parser.parse("invalid"));
+        TimeEntity baseTime = new TimeEntity(2024, 1, 29, 12, 0, 0);
+        TimeEntity result = parser.parse("上个月", baseTime);
+        assertNotNull(result);
+        assertEquals(2023, result.getYear());
+        assertEquals(12, result.getMonth());
+        assertEquals(29, result.getDay());
     }
+
+    @Test
+    void parseThisMonth() {
+        RelativeTimeParser parser = new RelativeTimeParser();
+        TimeEntity baseTime = new TimeEntity(2024, 1, 29, 12, 0, 0);
+        TimeEntity result = parser.parse("这个月", baseTime);
+        assertNotNull(result);
+        assertEquals(2024, result.getYear());
+        assertEquals(1, result.getMonth());
+        assertEquals(29, result.getDay());
+    }
+
+    @Test
+    void parseNextYear() {
+        RelativeTimeParser parser = new RelativeTimeParser();
+        TimeEntity baseTime = new TimeEntity(2024, 1, 29, 12, 0, 0);
+        TimeEntity result = parser.parse("明年", baseTime);
+        assertNotNull(result);
+        assertEquals(2025, result.getYear());
+        assertEquals(1, result.getMonth());
+        assertEquals(29, result.getDay());
+    }
+
+    @Test
+    void parseLastYear() {
+        RelativeTimeParser parser = new RelativeTimeParser();
+        TimeEntity baseTime = new TimeEntity(2024, 1, 29, 12, 0, 0);
+        TimeEntity result = parser.parse("去年", baseTime);
+        assertNotNull(result);
+        assertEquals(2023, result.getYear());
+        assertEquals(1, result.getMonth());
+        assertEquals(29, result.getDay());
+    }
+
+    @Test
+    void parseThisYear() {
+        RelativeTimeParser parser = new RelativeTimeParser();
+        TimeEntity baseTime = new TimeEntity(2024, 1, 29, 12, 0, 0);
+        TimeEntity result = parser.parse("今年", baseTime);
+        assertNotNull(result);
+        assertEquals(2024, result.getYear());
+        assertEquals(1, result.getMonth());
+        assertEquals(29, result.getDay());
+    }
+
 }
