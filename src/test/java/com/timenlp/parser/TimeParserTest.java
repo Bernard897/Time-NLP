@@ -1,42 +1,66 @@
 package com.timenlp.parser;
 
-import com.timenlp.entity.DateEntity;
+import com.timenlp.entity.TimeEntity;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
 
-public class TimeParserTest {
+class TimeParserTest {
 
     @Test
-    public void testParseTimeOfDay_HHMM() {
-        TimeParser timeParser = new TimeParser();
-        DateEntity dateEntity = new DateEntity();
-        timeParser.parseTimeOfDay("It is 12:30 now", dateEntity);
-
-        assertEquals(12, dateEntity.getHour());
-        assertEquals(30, dateEntity.getMinute());
-        assertEquals(-1, dateEntity.getSecond());
+    void parse_validTime_parsesCorrectly() {
+        TimeParser parser = new TimeParser();
+        TimeEntity timeEntity = parser.parse("14:30:00");
+        assertNotNull(timeEntity);
+        assertEquals(14, timeEntity.getHour());
+        assertEquals(30, timeEntity.getMinute());
+        assertEquals(0, timeEntity.getSecond());
     }
 
     @Test
-    public void testParseTimeOfDay_HHMMSS() {
-        TimeParser timeParser = new TimeParser();
-        DateEntity dateEntity = new DateEntity();
-        timeParser.parseTimeOfDay("The time is 08:15:45", dateEntity);
-
-        assertEquals(8, dateEntity.getHour());
-        assertEquals(15, dateEntity.getMinute());
-        assertEquals(45, dateEntity.getSecond());
+    void parse_invalidTime_returnsNull() {
+        TimeParser parser = new TimeParser();
+        TimeEntity timeEntity = parser.parse("invalid time");
+        assertNull(timeEntity);
     }
 
     @Test
-        public void testParseTimeOfDay_NoTime() {
-        TimeParser timeParser = new TimeParser();
-        DateEntity dateEntity = new DateEntity();
-        timeParser.parseTimeOfDay("This is a test", dateEntity);
+    void parse_timeWithAM_parsesCorrectly() {
+        TimeParser parser = new TimeParser();
+        TimeEntity timeEntity = parser.parse("2:30 AM");
+        assertNotNull(timeEntity);
+        assertEquals(2, timeEntity.getHour());
+        assertEquals(30, timeEntity.getMinute());
+        assertEquals(0, timeEntity.getSecond());
+    }
 
-        assertEquals(-1, dateEntity.getHour());
-        assertEquals(-1, dateEntity.getMinute());
-        assertEquals(-1, dateEntity.getSecond());
+    @Test
+    void parse_timeWithPM_parsesCorrectly() {
+        TimeParser parser = new TimeParser();
+        TimeEntity timeEntity = parser.parse("2:30 PM");
+        assertNotNull(timeEntity);
+        assertEquals(14, timeEntity.getHour());
+        assertEquals(30, timeEntity.getMinute());
+        assertEquals(0, timeEntity.getSecond());
+    }
+
+    @Test
+      void parse_timeWith12AM_parsesCorrectly() {
+        TimeParser parser = new TimeParser();
+        TimeEntity timeEntity = parser.parse("12:00 AM");
+        assertNotNull(timeEntity);
+        assertEquals(0, timeEntity.getHour());
+        assertEquals(0, timeEntity.getMinute());
+        assertEquals(0, timeEntity.getSecond());
+    }
+
+    @Test
+    void parse_timeWith12PM_parsesCorrectly() {
+        TimeParser parser = new TimeParser();
+        TimeEntity timeEntity = parser.parse("12:00 PM");
+        assertNotNull(timeEntity);
+        assertEquals(12, timeEntity.getHour());
+        assertEquals(0, timeEntity.getMinute());
+        assertEquals(0, timeEntity.getSecond());
     }
 }
