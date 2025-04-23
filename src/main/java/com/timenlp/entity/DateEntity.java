@@ -8,17 +8,6 @@ public class DateEntity {
     private int minute = -1;
     private int second = -1;
 
-    public DateEntity() {}
-
-    public DateEntity(int year, int month, int day, int hour, int minute, int second) {
-        this.year = year;
-        this.month = month;
-        this.day = day;
-        this.hour = hour;
-        this.minute = minute;
-        this.second = second;
-    }
-
     public int getYear() {
         return year;
     }
