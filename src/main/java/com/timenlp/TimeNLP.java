@@ -1,87 +1,66 @@
 package com.timenlp;
 
 import com.timenlp.entity.DateEntity;
-import com.timenlp.entity.TimeEntity;
 import com.timenlp.parser.DateParser;
+import com.timenlp.parser.RelativeTimeParser;
 import com.timenlp.parser.TimeParser;
+import com.timenlp.entity.TimeEntity;
+import java.util.Date;
 
 public class TimeNLP {
 
-    private DateParser dateParser;
-    private TimeParser timeParser;
+    private final DateParser dateParser;
+    private final TimeParser timeParser;
+    private final RelativeTimeParser relativeTimeParser;
 
     public TimeNLP() {
         this.dateParser = new DateParser();
         this.timeParser = new TimeParser();
+        this.relativeTimeParser = new RelativeTimeParser();
     }
 
     public DateEntity parseDate(String text) {
-        return dateParser.parse(text);
+        return this.dateParser.parse(text);
     }
 
+     public Date parseRelativeTime(String text) {
+        return this.relativeTimeParser.parse(text);
+    }
     public TimeEntity parseTime(String text) {
-        return timeParser.parse(text);
+        return this.timeParser.parse(text);
     }
 
-    public DateEntity parseDateTime(String text) {
-        // Attempt to parse as combined date and time
-        String[] parts = text.split(" ");
-        if (parts.length >= 2) {
-            DateEntity dateEntity = dateParser.parse(parts[0]);
-            TimeEntity timeEntity = timeParser.parse(parts[1]);
-
-            if (dateEntity != null && timeEntity != null) {
-                dateEntity.setHour(timeEntity.getHour());
-                dateEntity.setMinute(timeEntity.getMinute());
-                dateEntity.setSecond(timeEntity.getSecond());
-                return dateEntity;
-            }
-        }
-        DateEntity dateEntity = dateParser.parse(text);
-        if (dateEntity != null) {
-            return dateEntity;
-        }
-        // Fallback to individual parsing if combined fails
-        TimeEntity timeEntity = timeParser.parse(text);
-        if (timeEntity != null) {
-            DateEntity now =  dateParser.parse("今天");
-            if (now != null){
-                   now.setHour(timeEntity.getHour());
-                   now.setMinute(timeEntity.getMinute());
-                   now.setSecond(timeEntity.getSecond());
-                   return now;
-            }
-
-        }
-
-
-        return null;
+     // Add method to update date parser regex from outside
+    public void setDateRegex(String regex) {
+        this.dateParser.setDateRegex(regex);
     }
 
-    public static void main(String[] args) {
-        TimeNLP timeNLP = new TimeNLP();
-        DateEntity dateEntity = timeNLP.parseDateTime("2023-10-27 10:00");
-        if (dateEntity != null) {
-            System.out.println("Date: " + dateEntity.getYear() + "-" + dateEntity.getMonth() + "-" + dateEntity.getDay() +
-                    " " + dateEntity.getHour() + ":" + dateEntity.getMinute());
-        } else {
-            System.out.println("Could not parse date and time.");
-        }
-
-        dateEntity = timeNLP.parseDateTime("明天 10:00");
-        if (dateEntity != null) {
-            System.out.println("Date: " + dateEntity.getYear() + "-" + dateEntity.getMonth() + "-" + dateEntity.getDay() +
-                    " " + dateEntity.getHour() + ":" + dateEntity.getMinute());
-        } else {
-            System.out.println("Could not parse date and time.");
-        }
-        dateEntity = timeNLP.parseDateTime("2024-02-29 10:00");
-        if (dateEntity != null) {
-            System.out.println("Date: " + dateEntity.getYear() + "-" + dateEntity.getMonth() + "-" + dateEntity.getDay() +
-                    " " + dateEntity.getHour() + ":" + dateEntity.getMinute());
-        } else {
-            System.out.println("Could not parse date and time.");
-        }
-
+      // Add method to update relative time regex from outside
+    public void setRelativeTimeRegex(String regex) {
+        this.relativeTimeParser.setRelativeTimeRegex(regex);
     }
+
+
+    // Example method combining date, time, relative time (Improve as needed)
+    public String parse(String text) {
+        DateEntity dateEntity = parseDate(text);
+        TimeEntity timeEntity = parseTime(text);
+        Date relativeDate = parseRelativeTime(text);
+
+        StringBuilder result = new StringBuilder();
+
+        if (dateEntity != null && dateEntity.getOriginalText() != null) {
+            result.append("Date: ").append(dateEntity.getOriginalText()).append("\n");
+        }
+        if (timeEntity != null && timeEntity.getOriginalText() != null) {
+            result.append("Time: ").append(timeEntity.getOriginalText()).append("\n");
+        }
+        if(relativeDate != null){
+          result.append("Relative Time: ").append(relativeDate.toString()).append("\n");
+        }
+
+
+        return result.toString();
+    }
+
 }
