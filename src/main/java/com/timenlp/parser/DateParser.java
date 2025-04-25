@@ -2,52 +2,60 @@ package com.timenlp.parser;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import com.timenlp.entity.DateEntity;
 import com.timenlp.util.ResourceLoader;
 
 public class DateParser {
 
-    private final String dateRegex;
-    private final Pattern datePattern;
+    private final String dateRegexFile = "regex/date.regex";
+    private String dateRegex;
+    private Pattern datePattern;
 
     public DateParser() {
-        this.dateRegex = ResourceLoader.loadRegex("date.regex");
-        this.datePattern = Pattern.compile(dateRegex);
+        this.dateRegex = ResourceLoader.loadRegex(dateRegexFile);
+        this.datePattern = Pattern.compile(this.dateRegex);
     }
 
-    public String parse(String text) {
-        Matcher matcher = datePattern.matcher(text);
+    public DateEntity parse(String text) {
+        Matcher matcher = this.datePattern.matcher(text);
+        DateEntity dateEntity = new DateEntity();
         if (matcher.find()) {
-            // Extract date components and reformat as needed (yyyy-MM-dd)
-            String year = matcher.group("year");
-            String month = matcher.group("month");
-            String day = matcher.group("day");
-
-            if (year != null && month != null && day != null) {
-                // Basic reformatting logic, adjust as needed for different formats
-                if (month.length() == 3) { //handles month names like 'Jan'
-                    month = convertMonthNameToNumber(month);
+            dateEntity.setOriginalText(matcher.group());
+            // Implement logic to extract year, month, day from the matched group
+            // Example (This is a placeholder, refine based on your date.regex):
+             String matchedDate = matcher.group();
+            // Attempt to parse date, handle potential NumberFormatException
+            try {
+               // Placeholder logic - improve date extraction as needed 
+               String[] parts = matchedDate.split("[-/\\.]"); // Use delimiters for parsing different date formats
+               if (parts.length == 3) { // Assuming YYYY-MM-DD, MM-DD-YYYY or similar
+                  //Example parsing - adjust based on regex
+                  dateEntity.setYear(Integer.parseInt(parts[0]));
+                  dateEntity.setMonth(Integer.parseInt(parts[1]));
+                  dateEntity.setDay(Integer.parseInt(parts[2]));
+                }else if(parts.length == 2){
+                   //Possibly DD/MM or MM/DD format
+                   dateEntity.setMonth(Integer.parseInt(parts[0]));
+                   dateEntity.setDay(Integer.parseInt(parts[1]));
                 }
-                return String.format("%s-%s-%s", year, month, day);
+
+            } catch (NumberFormatException e) {
+                System.err.println("Error parsing date: " + matchedDate + ", due to: " + e.getMessage());
+                // Handle parsing errors gracefully, maybe return a default DateEntity or null
+                // For now, keep the original empty DateEntity with the matched text.
             }
+
+        }else{
+            return null;
         }
-        return null;
+
+        return dateEntity;
     }
 
-    private String convertMonthNameToNumber(String month) {
-        switch (month.toLowerCase()) {
-            case "jan": return "01";
-            case "feb": return "02";
-            case "mar": return "03";
-            case "apr": return "04";
-            case "may": return "05";
-            case "jun": return "06";
-            case "jul": return "07";
-            case "aug": return "08";
-            case "sep": return "09";
-            case "oct": return "10";
-            case "nov": return "11";
-            case "dec": return "12";
-            default: return "00"; // Handle invalid month
-        }
+    // Example method to update the date regex (useful for testing)
+    public void setDateRegex(String regex) {
+        this.dateRegex = regex;
+        this.datePattern = Pattern.compile(this.dateRegex);
     }
+
 }
