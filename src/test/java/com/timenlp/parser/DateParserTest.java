@@ -1,62 +1,40 @@
 package com.timenlp.parser;
 
-import com.timenlp.entity.DateEntity;
+import com.timenlp.parser.DateParser;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.*;
+import java.util.Date;
 
-class DateParserTest {
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+
+public class DateParserTest {
+
+    private DateParser dateParser = new DateParser();
 
     @Test
-    void testParseValidDate() {
-        DateParser dateParser = new DateParser();
-        DateEntity dateEntity = dateParser.parse("2023-10-26");
-        
-        assertNotNull(dateEntity);
-        assertEquals("2023-10-26", dateEntity.getOriginalText());
-        assertEquals(2023, dateEntity.getYear());
-        assertEquals(10, dateEntity.getMonth());
-        assertEquals(26, dateEntity.getDay());
+    public void testParseDateRange() {
+        Date date = dateParser.parseDate("from 2023-01-01 to 2023-01-05");
+        assertNotNull(date);
     }
-
-    @Test
-    void testParseInvalidDate() {
-        DateParser dateParser = new DateParser();
-        DateEntity dateEntity = dateParser.parse("Invalid Date");
-        assertNull(dateEntity);
-    }
-
-    @Test
-    void testParseDifferentFormat() {
-       DateParser dateParser = new DateParser();
-       DateEntity dateEntity = dateParser.parse("10/26/2023");
-       //The following assertions are based on the current implementation
-       //of the parser. date format should be parsed correctly for meaningful assertions
-       //assertEquals("10/26/2023", dateEntity.getOriginalText());
-
-    }
-
-    @Test
-    void testUpdateRegex() {
-        DateParser dateParser = new DateParser();
-        String newRegex = "\\d{4}/\\d{2}/\\d{2}"; //YYYY/MM/DD
-        dateParser.setDateRegex(newRegex);
-        DateEntity dateEntity = dateParser.parse("2024/01/15");
-
-        assertNotNull(dateEntity);
-        assertEquals("2024/01/15", dateEntity.getOriginalText());
     
-        
+    @Test
+    public void testParseSimpleDate(){  // Test Simple date parsing
+        Date date = dateParser.parseDate("2024-01-01");
+        assertNotNull(date);
     }
 
-     @Test
-    void testParsePartialDate() {
-        DateParser dateParser = new DateParser();
-       DateEntity dateEntity = dateParser.parse("12/25"); //Month/Day
-       //The following assertions are based on the current implementation
-       //of the parser. date format should be parsed correctly for meaningful assertions
-       //assertEquals("12/25", dateEntity.getOriginalText());
-       //assertEquals(12, dateEntity.getMonth());
-       //assertEquals(25, dateEntity.getDay());
+    @Test
+    public void testParseChineseDate(){// Test Chinese date parsing
+        Date date = dateParser.parseDate("2024年02月03日");
+        assertNotNull(date);
     }
+
+    @Test
+    public void testParseInvalidDate() {
+        Date date = dateParser.parseDate("Invalid Date");
+        assertNull(date);
+    }
+
+ 
 }

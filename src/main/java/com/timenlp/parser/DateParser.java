@@ -1,61 +1,72 @@
 package com.timenlp.parser;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import com.timenlp.entity.DateEntity;
-import com.timenlp.util.ResourceLoader;
 
 public class DateParser {
 
-    private final String dateRegexFile = "regex/date.regex";
-    private String dateRegex;
-    private Pattern datePattern;
+    private static final String DATE_RANGE_REGEX = "from\s+(.+?)\s+to\s+(.+?)";
+    private SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
 
-    public DateParser() {
-        this.dateRegex = ResourceLoader.loadRegex(dateRegexFile);
-        this.datePattern = Pattern.compile(this.dateRegex);
-    }
+    public Date parseDate(String text) {
+        Date date = null;
+        date = parseDateRange(text); // Attempt to parse the expression as a date range first.
+        if (date == null) { // If not a date range, try parsing as a single date.
+          try {
+            date = dateFormat.parse(text);
+          } catch (ParseException e) {
+            // Try other date parsing logic if needed
+              // e.g., parsing dates containing "年", "月", "日"
+              date = parseChineseDate(text); // Use the Chinese date parser
+              if (date == null) {
+                  System.out.println("Date parsing failed for: " + text);
+              }
 
-    public DateEntity parse(String text) {
-        Matcher matcher = this.datePattern.matcher(text);
-        DateEntity dateEntity = new DateEntity();
-        if (matcher.find()) {
-            dateEntity.setOriginalText(matcher.group());
-            // Implement logic to extract year, month, day from the matched group
-            // Example (This is a placeholder, refine based on your date.regex):
-             String matchedDate = matcher.group();
-            // Attempt to parse date, handle potential NumberFormatException
-            try {
-               // Placeholder logic - improve date extraction as needed 
-               String[] parts = matchedDate.split("[-/\\.]"); // Use delimiters for parsing different date formats
-               if (parts.length == 3) { // Assuming YYYY-MM-DD, MM-DD-YYYY or similar
-                  //Example parsing - adjust based on regex
-                  dateEntity.setYear(Integer.parseInt(parts[0]));
-                  dateEntity.setMonth(Integer.parseInt(parts[1]));
-                  dateEntity.setDay(Integer.parseInt(parts[2]));
-                }else if(parts.length == 2){
-                   //Possibly DD/MM or MM/DD format
-                   dateEntity.setMonth(Integer.parseInt(parts[0]));
-                   dateEntity.setDay(Integer.parseInt(parts[1]));
-                }
-
-            } catch (NumberFormatException e) {
-                System.err.println("Error parsing date: " + matchedDate + ", due to: " + e.getMessage());
-                // Handle parsing errors gracefully, maybe return a default DateEntity or null
-                // For now, keep the original empty DateEntity with the matched text.
-            }
-
-        }else{
-            return null;
+          }
         }
-
-        return dateEntity;
+        return date;
     }
 
-    // Example method to update the date regex (useful for testing)
-    public void setDateRegex(String regex) {
-        this.dateRegex = regex;
-        this.datePattern = Pattern.compile(this.dateRegex);
+    private Date parseDateRange(String text) {
+        Pattern pattern = Pattern.compile(DATE_RANGE_REGEX);
+        Matcher matcher = pattern.matcher(text);
+        if (matcher.find()) {
+            String startDateText = matcher.group(1);
+            String endDateText = matcher.group(2);
+
+            Date startDate = parseDate(startDateText);
+            Date endDate = parseDate(endDateText);
+
+            if (startDate != null && endDate != null) {
+                // For simplicity, we'll just return the start date.  In a real-world
+                // scenario, you might want to return a DateRange object encapsulating 
+                // both the start and end dates. Or return a List of dates.
+                return startDate; 
+            }
+        }
+        return null;
     }
+
+    private Date parseChineseDate(String text) { // A rudimentary Chinese date parser
+        Pattern pattern = Pattern.compile("(\d+)年(\d+)月(\d+)日");
+        Matcher matcher = pattern.matcher(text);
+
+        if(matcher.find()) {
+            int year = Integer.parseInt(matcher.group(1));
+            int month = Integer.parseInt(matcher.group(2));
+            int day = Integer.parseInt(matcher.group(3));
+
+            Calendar calendar = Calendar.getInstance();
+            calendar.set(year, month -1 , day);
+            return calendar.getTime();
+
+        }
+        return null;
+    }
+
 
 }
