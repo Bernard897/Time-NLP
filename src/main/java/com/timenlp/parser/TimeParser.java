@@ -1,45 +1,45 @@
 package com.timenlp.parser;
 
-import com.timenlp.entity.TimeEntity;
+import com.timenlp.entity.DateEntity;
+import com.timenlp.util.ResourceLoader;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class TimeParser {
 
-    private static final String timeRegex = "((?:(?:[0-1]?[0-9])|(?:2[0-3])):[0-5][0-9](?::[0-5][0-9])?)\s*(?:AM|PM|am|pm)?";
+    private boolean fuzzyMatching;
+    private static final String timeRegex = ResourceLoader.loadRegex("time.regex");
 
-    private static final Pattern timePattern = Pattern.compile(timeRegex);
+    public TimeParser(boolean fuzzyMatching) {
+        this.fuzzyMatching = fuzzyMatching;
+    }
 
-    public TimeEntity parse(String text) {
-        Matcher matcher = timePattern.matcher(text);
-        if (matcher.find()) {
-            String timeStr = matcher.group(1);
-            String ampm = matcher.group(2);
-            String[] parts = timeStr.split(":");
-            int hour = Integer.parseInt(parts[0]);
-            int minute = Integer.parseInt(parts[1]);
-            int second = 0;
-            if (parts.length > 2) {
-                second = Integer.parseInt(parts[2]);
+    public DateEntity parse(String text, DateEntity dateEntity) {
+        Pattern pattern = Pattern.compile(timeRegex, Pattern.CASE_INSENSITIVE);
+        Matcher matcher = pattern.matcher(text);
+
+        while (matcher.find()) {
+            String time = matcher.group();
+            if (fuzzyMatching) {
+                time = fuzzyMatch(time);
             }
-
-            if (ampm != null && (ampm.equalsIgnoreCase("PM") || ampm.equalsIgnoreCase("pm"))) {
-                if (hour < 12) {
-                    hour += 12;
-                }
-            } else if (ampm != null && (ampm.equalsIgnoreCase("AM") || ampm.equalsIgnoreCase("am"))) {
-                if (hour == 12){
-                    hour = 0; // Midnight 12 AM should be treated as 0
-                }
-            }
-
-
-            TimeEntity timeEntity = new TimeEntity();
-            timeEntity.setHour(hour);
-            timeEntity.setMinute(minute);
-            timeEntity.setSecond(second);
-            return timeEntity;
+            dateEntity.setTime(time);
+            break;
         }
-        return null;
+        return dateEntity;
+    }
+
+    private String fuzzyMatch(String input) {
+          //Very basic fuzzy matching logic
+        String timeRegexPattern = "(0?[0-9]|1[0-9]|2[0-3])(:([0-5][0-9])){1,2}"; // Example: HH:MM or H:MM or HH:MM:SS
+        if (input.matches(timeRegexPattern)) {
+            return input;
+        }
+
+        //If input is close enough to the pattern above
+        //calculate the Levenshtein distance via external utils library.
+        //Could potentially return the best matching time using distance.
+        return input; // Return the original input if no fuzzy matching applied.
+
     }
 }
