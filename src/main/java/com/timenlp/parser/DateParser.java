@@ -1,72 +1,45 @@
 package com.timenlp.parser;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.Date;
+import com.timenlp.entity.DateEntity;
+import com.timenlp.util.ResourceLoader;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class DateParser {
+    private boolean fuzzyMatching;
+    private static final String dateRegex = ResourceLoader.loadRegex("date.regex");
 
-    private static final String DATE_RANGE_REGEX = "from\s+(.+?)\s+to\s+(.+?)";
-    private SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
-
-    public Date parseDate(String text) {
-        Date date = null;
-        date = parseDateRange(text); // Attempt to parse the expression as a date range first.
-        if (date == null) { // If not a date range, try parsing as a single date.
-          try {
-            date = dateFormat.parse(text);
-          } catch (ParseException e) {
-            // Try other date parsing logic if needed
-              // e.g., parsing dates containing "年", "月", "日"
-              date = parseChineseDate(text); // Use the Chinese date parser
-              if (date == null) {
-                  System.out.println("Date parsing failed for: " + text);
-              }
-
-          }
-        }
-        return date;
+    public DateParser(boolean fuzzyMatching) {
+        this.fuzzyMatching = fuzzyMatching;
     }
 
-    private Date parseDateRange(String text) {
-        Pattern pattern = Pattern.compile(DATE_RANGE_REGEX);
+    public DateEntity parse(String text) {
+        DateEntity dateEntity = new DateEntity();
+        Pattern pattern = Pattern.compile(dateRegex, Pattern.CASE_INSENSITIVE);
         Matcher matcher = pattern.matcher(text);
-        if (matcher.find()) {
-            String startDateText = matcher.group(1);
-            String endDateText = matcher.group(2);
 
-            Date startDate = parseDate(startDateText);
-            Date endDate = parseDate(endDateText);
-
-            if (startDate != null && endDate != null) {
-                // For simplicity, we'll just return the start date.  In a real-world
-                // scenario, you might want to return a DateRange object encapsulating 
-                // both the start and end dates. Or return a List of dates.
-                return startDate; 
+        while (matcher.find()) {
+            String date = matcher.group();
+            if (fuzzyMatching) {
+                date = fuzzyMatch(date);
             }
+            dateEntity.setDate(date);
+            break;
         }
-        return null;
+
+        return dateEntity;
     }
 
-    private Date parseChineseDate(String text) { // A rudimentary Chinese date parser
-        Pattern pattern = Pattern.compile("(\d+)年(\d+)月(\d+)日");
-        Matcher matcher = pattern.matcher(text);
-
-        if(matcher.find()) {
-            int year = Integer.parseInt(matcher.group(1));
-            int month = Integer.parseInt(matcher.group(2));
-            int day = Integer.parseInt(matcher.group(3));
-
-            Calendar calendar = Calendar.getInstance();
-            calendar.set(year, month -1 , day);
-            return calendar.getTime();
-
+    private String fuzzyMatch(String input) {
+        //  Very basic fuzzy matching logic
+        String dateRegexPattern = "(19|20)\d{2}[- /.](0[1-9]|1[012])[- /.](0[1-9]|[12][0-9]|3[01])"; // Example : YYYY-MM-DD
+        if (input.matches(dateRegexPattern)) {
+            return input;
         }
-        return null;
+        //If input is close enough to the pattern above
+        //calculate the Levenshtein distance via external utils library.
+        //Could potentially return the best matching date using distance.
+
+         return input; // Return the original input if no fuzzy matching applied.
     }
-
-
 }
