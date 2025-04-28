@@ -1,45 +1,40 @@
 package com.timenlp.parser;
 
-import com.timenlp.entity.DateEntity;
 import com.timenlp.util.ResourceLoader;
-import java.util.regex.Matcher;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.regex.Pattern;
 
 public class DateParser {
-    private boolean fuzzyMatching;
-    private static final String dateRegex = ResourceLoader.loadRegex("date.regex");
+    private List<Pattern> datePatterns = new ArrayList<>();
 
-    public DateParser(boolean fuzzyMatching) {
-        this.fuzzyMatching = fuzzyMatching;
+    public DateParser() {
+        loadDateRegex();
     }
 
-    public DateEntity parse(String text) {
-        DateEntity dateEntity = new DateEntity();
-        Pattern pattern = Pattern.compile(dateRegex, Pattern.CASE_INSENSITIVE);
-        Matcher matcher = pattern.matcher(text);
-
-        while (matcher.find()) {
-            String date = matcher.group();
-            if (fuzzyMatching) {
-                date = fuzzyMatch(date);
+    private void loadDateRegex() {
+        String path = ResourceLoader.getDateRegexPath();
+        try (InputStream inputStream = getClass().getClassLoader().getResourceAsStream(path);
+             BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                if (!line.trim().isEmpty() && !line.trim().startsWith("#")) {
+                    datePatterns.add(Pattern.compile(line.trim()));
+                }
             }
-            dateEntity.setDate(date);
-            break;
+        } catch (IOException e) {
+            e.printStackTrace();
         }
-
-        return dateEntity;
     }
 
-    private String fuzzyMatch(String input) {
-        //  Very basic fuzzy matching logic
-        String dateRegexPattern = "(19|20)\d{2}[- /.](0[1-9]|1[012])[- /.](0[1-9]|[12][0-9]|3[01])"; // Example : YYYY-MM-DD
-        if (input.matches(dateRegexPattern)) {
-            return input;
-        }
-        //If input is close enough to the pattern above
-        //calculate the Levenshtein distance via external utils library.
-        //Could potentially return the best matching date using distance.
-
-         return input; // Return the original input if no fuzzy matching applied.
+        public List<Pattern> getDatePatterns() {
+        return datePatterns;
     }
+
+
 }
